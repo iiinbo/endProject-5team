@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="admin">
+
+	<insert id="pointUpdate" >
+		INSERT INTO BM_POINT (
+			USER_ID
+			,INFO
+			,POINT
+		) VALUES (
+			#{userId }
+			,#{info }
+			,#{point }
+		)
+	</insert>
+	
+	
+	<select id="myStore" resultType="Store">
+	WITH R_COUNT AS (
+	    SELECT STORE_ID
+                ,ROUND(AVG(SCORE), 1) SCORE
+                ,COUNT(REVIEW_CONTENT) REVIEW_COUNT
+                ,COUNT(BOSS_COMMENT) BOSS_COMMENT_COUNT 
+        FROM    BM_REVIEW 
+        GROUP BY STORE_ID
+	),
+	STORE AS (
+	    SELECT  S.*,
+	            T.*
+	    FROM        BM_STORE S
+	    LEFT JOIN   R_COUNT T
+	    ON          S.ID = T.STORE_ID
+        LEFT JOIN   BM_MY_STORE M
+        ON          S.ID = M.STORE_ID
+        WHERE       M.USER_ID = #{user_id }
+	)
+	SELECT * FROM STORE
+	</select>
+	
+	
+	
+	<update id="storeInfoUpdate">
+		UPDATE BM_STORE SET
+			CATEGORY = #{category }
+			,STORE_NAME = #{storeName }
+			,STORE_ADDRESS1 = #{storeAddress1 }
+			,STORE_ADDRESS2 = #{storeAddress2 }
+			,STORE_ADDRESS3 = #{storeAddress3 }
+			,STORE_PHONE = #{storePhone }
+			,STORE_IMG = #{storeImg }
+			,STORE_THUMB = #{storeThumb }
+			,OPENING_TIME = #{openingTime }
+			,CLOSING_TIME = #{closingTime }
+			,MIN_DELEVERY = #{minDelevery }
+			,DELEVERY_TIME = #{deleveryTime }
+			,DELEVERY_TIP = #{deleveryTip }
+			,STORE_DES = #{storeDes }
+		WHERE
+		    ID = #{id }  
+	</update>
+	
+	
+	
+<!-- 	<insert id="addMenu">
+		<selectKey keyProperty="id" resultType="long" order="BEFORE" >
+		   SELECT FOOD_ID_SEQ.NEXTVAL FROM DUAL
+	   </selectKey>
+	   INSERT INTO BM_FOOD (
+			   ID
+			   ,STORE_ID
+			   ,FOOD_NAME
+			   ,FOOD_PRICE
+			   ,FOOD_DEC
+			   ,FOOD_IMG
+			   ,FOOD_THUMB
+		   ) VALUES (
+			   #{id }
+			   ,#{storeId }
+			   ,#{foodName }
+			   ,#{foodPrice }
+			   ,#{foodDec }
+			   ,#{foodImg }
+			   ,#{foodThumb }
+		   )
+   </insert> -->
+	
+	
+	<!-- useGeneratedKeys를 사용하면 keyProperty에 설정한 컬럼을 리턴받을수있다 -->
+	<insert id="addMenu" useGeneratedKeys="true" keyProperty="id">
+	   INSERT INTO BM_FOOD (
+			   STORE_ID
+			   ,FOOD_NAME
+			   ,FOOD_PRICE
+			   ,FOOD_DEC
+			   ,FOOD_IMG
+			   ,FOOD_THUMB
+		   ) VALUES (
+			   #{storeId }
+			   ,#{foodName }
+			   ,#{foodPrice }
+			   ,#{foodDec }
+			   ,#{foodImg }
+			   ,#{foodThumb }
+		   )
+   </insert>
+   
+	
+	<insert id="addMenuOption">
+		INSERT INTO BM_FOOD_OPTION (FOOD_ID, OPTION_NAME, OPTION_PRICE)
+		<foreach collection="list" item="item"  separator="UNION ALL" >
+				SELECT	#{item.foodId }
+						,#{item.optionName }
+						,#{item.optionPrice } 
+				FROM	DUAL
+		</foreach>
+	</insert>
+	
+	
+	
+	<update id="updateMenu">
+		UPDATE	BM_FOOD 
+		SET		STORE_ID = #{food.storeId }
+			    ,FOOD_NAME = #{food.foodName }
+			    ,FOOD_PRICE = #{food.foodPrice }
+			    ,FOOD_DEC = #{food.foodDec }
+			    ,FOOD_IMG = #{food.foodImg }
+			    ,FOOD_THUMB = #{food.foodThumb }
+		WHERE	ID = #{food.id };
+	
+		<if test="optionList != null">
+			DELETE FROM BM_FOOD_OPTION WHERE FOOD_ID = #{food.id } AND ID NOT IN
+			<foreach collection="optionList" item="item" open="(" close=");" separator=","  >
+				${item.optionId }
+			</foreach>
+		
+			<foreach collection="optionList" item="item" separator=";" close=";">
+				<if test="item.optionId == -1">
+					INSERT INTO	
+					BM_FOOD_OPTION (FOOD_ID
+									,OPTION_NAME
+									,OPTION_PRICE)
+					VALUES		(#{food.id }
+								,#{item.optionName }
+								,#{item.optionPrice }) 
+				</if>
+				
+				<if test="item.optionId != -1">
+					UPDATE	BM_FOOD_OPTION 
+					SET		OPTION_NAME = #{item.optionName }
+							,OPTION_PRICE = #{item.optionPrice }
+					WHERE	FOOD_ID = #{food.id }
+					AND		ID = #{item.optionId }		
+				</if>
+			</foreach>
+		</if>
+	</update>
+	
+	
+	
+	
+	<delete id="deleteMenuOption">
+		DELETE FROM BM_FOOD_OPTION WHERE FOOD_ID = #{foodId }
+	</delete>
+	
+	
+	
+	
+	<delete id="deleteMenu">
+		DELETE FROM BM_FOOD WHERE STORE_ID = ${storeId } AND ID IN 
+		<foreach collection="deleteNumber" item="arr" open="(" close=")" separator="," >
+			${arr }
+		</foreach>
+	</delete>
+	
+	
+	
+	
+	<update id="bossComment">
+		UPDATE BM_REVIEW SET
+			BOSS_COMMENT = #{bossComment }
+		WHERE
+			ORDER_NUM = #{orderNum }
+		AND
+			STORE_ID = #{storeId }
+	</update>
+	
+	
+	<select id="getMyStoreId" resultType="long">
+		SELECT STORE_ID FROM BM_MY_STORE WHERE USER_ID = #{userId } 
+	</select>
+
+
+
+	
+	<select id="orderList" resultType="OrderList">
+	WITH T_ORDER AS ( 
+	    SELECT * FROM (
+	    	SELECT * FROM BM_ORDER_USER UNION ALL SELECT * FROM BM_ORDER_NON_USER) RESULT 
+    	WHERE STORE_ID = #{storeId }
+	),
+	T_DETAIL AS (
+	    SELECT  ORDER_NUM, 
+	            GROUP_CONCAT(FOOD_INFO SEPARATOR '/') FOOD_INFO
+	    FROM BM_ORDER_DETAIL_USER N
+	    GROUP BY    ORDER_NUM
+	    UNION ALL
+	    SELECT  ORDER_NUM, 
+	            GROUP_CONCAT(FOOD_INFO SEPARATOR '/') FOOD_INFO
+	    FROM BM_ORDER_DETAIL_NON_USER N
+	    GROUP BY    ORDER_NUM
+	)
+	 SELECT   COUNT1
+              ,COUNT2
+              ,O.*
+              ,D.FOOD_INFO
+              ,S.STORE_NAME
+              ,S.DELEVERY_TIP
+      FROM (
+		SELECT  #{storeId } AS STORE_ID
+                ,A.COUNT COUNT1
+                ,B.COUNT COUNT2
+        FROM    (SELECT COUNT(*) COUNT FROM T_ORDER WHERE DELEVERY_STATUS = '주문접수 대기 중') A,
+                (SELECT COUNT(*) COUNT FROM T_ORDER WHERE DELEVERY_STATUS LIKE '배달 준비 중%') B
+      ) ORDER_COUNT
+      LEFT JOIN
+      (SELECT * FROM
+			(SELECT * FROM T_ORDER WHERE DELEVERY_STATUS LIKE '${list }%' ORDER BY ORDER_DATE) RESULT 
+   		LIMIT 0, #{lastList } 
+       )O
+      ON          ORDER_COUNT.STORE_ID = O.STORE_ID
+      LEFT JOIN   T_DETAIL D      
+      ON          O.ORDER_NUM  = D.ORDER_NUM
+      LEFT JOIN   BM_STORE S
+      ON          O.STORE_ID = S.ID
+      ORDER BY ORDER_DATE
+	</select>
+
+
+
+	<update id="orderAccept">
+		<if test="userId == 0">
+			UPDATE BM_ORDER_NON_USER SET
+		</if>
+		<if test="userId != 0">
+			UPDATE BM_ORDER_USER SET
+		</if>
+			DELEVERY_STATUS = '배달 준비 중(약 ${time}분 후에 도착)'
+			WHERE ORDER_NUM = #{orderNum }
+	</update>
+
+
+
+	<update id="orderCancle">
+		<if test="userId == 0">
+			UPDATE BM_ORDER_NON_USER SET 
+		</if>
+		<if test="userId != 0">
+			UPDATE BM_ORDER_USER SET
+		</if>
+			DELEVERY_STATUS = '주문 취소(${cancleReason })'
+			WHERE ORDER_NUM = #{orderNum }
+	</update>
+	
+	
+	
+	<update id="orderComplete">
+		<if test="userId == 0">
+			UPDATE BM_ORDER_NON_USER SET 
+		</if>
+		<if test="userId != 0">
+			UPDATE BM_ORDER_USER SET
+		</if>
+			DELEVERY_STATUS = '배달 완료'
+			WHERE ORDER_NUM = #{orderNum }
+	</update>
+	
+	
+	<select id="salesDetail" resultType="SalesDetail">
+	WITH T_ORDER AS (
+	    SELECT * FROM (
+	        SELECT ORDER_NUM, STORE_ID, ORDER_DATE, TOTAL_PRICE, DELEVERY_STATUS FROM BM_ORDER_USER
+	        UNION ALL
+	        SELECT ORDER_NUM, STORE_ID, ORDER_DATE, TOTAL_PRICE, DELEVERY_STATUS FROM BM_ORDER_NON_USER
+	    ) RESULT
+	    WHERE     STORE_ID = #{storeId }
+	    AND   	  DELEVERY_STATUS = '배달 완료'
+	    <if test="date == null">
+	    AND   DATE_FORMAT(ORDER_DATE, '%Y-%m-%d') = DATE_FORMAT(NOW(), '%Y-%m-%d')
+	    </if>
+	    
+	    <if test="date != null">
+	    AND   DATE_FORMAT(ORDER_DATE, '%Y-%m-%d') = #{date }
+	    </if>
+	    
+	),
+	T_DETAIL AS (
+	    SELECT  ORDER_NUM, 
+	            GROUP_CONCAT(FOOD_INFO SEPARATOR '/') FOOD_INFO
+	    FROM BM_ORDER_DETAIL_USER N
+	    GROUP BY    ORDER_NUM
+	    UNION ALL
+	    SELECT  ORDER_NUM, 
+	           GROUP_CONCAT(FOOD_INFO SEPARATOR '/') FOOD_INFO
+	    FROM BM_ORDER_DETAIL_NON_USER N
+	    GROUP BY    ORDER_NUM
+	)
+	SELECT      TOTAL_PRICE
+	            ,FOOD_INFO
+	FROM        T_ORDER O
+	LEFT JOIN   T_DETAIL D
+	ON          O.ORDER_NUM = D.ORDER_NUM
+	</select>
+	
+	
+	
+	
+	<select id="sales" resultType="Sales">
+		 SELECT  STORE_ID
+	    		,IFNULL(ORDER_DATE, '합계') orderDate
+                ,SUM(TOTAL_PRICE) total
+        FROM (
+	        SELECT DATE_FORMAT(ORDER_DATE, #{dateFormat }) ORDER_DATE, STORE_ID, TOTAL_PRICE, DELEVERY_STATUS FROM BM_ORDER_USER
+	        UNION ALL
+	        SELECT DATE_FORMAT(ORDER_DATE, #{dateFormat }) ORDER_DATE, STORE_ID, TOTAL_PRICE, DELEVERY_STATUS FROM BM_ORDER_NON_USER
+	    ) RESULT
+	    WHERE	STORE_ID = #{storeId }
+	    AND   	DELEVERY_STATUS = '배달 완료'
+	    AND		ORDER_DATE
+	    BETWEEN #{startDate } AND #{endDate }
+	    GROUP BY ORDER_DATE WITH ROLLUP
+	</select>
+	
+	
+	
+	
+	<select id="test" resultType="Sales">
+		 SELECT  STORE_ID
+	    		,IFNULL(ORDER_DATE, '합계') orderDate
+                ,SUM(TOTAL_PRICE) total
+        FROM (
+	        SELECT DATE_FORMAT(ORDER_DATE, #{dateFormat }) ORDER_DATE, STORE_ID, TOTAL_PRICE, DELEVERY_STATUS FROM BM_ORDER_USER
+	        UNION ALL
+	        SELECT DATE_FORMAT(ORDER_DATE, #{dateFormat }) ORDER_DATE, STORE_ID, TOTAL_PRICE, DELEVERY_STATUS FROM BM_ORDER_NON_USER
+	    ) RESULT
+	    WHERE	STORE_ID = #{storeId }
+	    AND   	DELEVERY_STATUS = '배달 완료'
+	    AND		ORDER_DATE
+	    BETWEEN #{startDate } AND #{endDate }
+	    GROUP BY ORDER_DATE WITH ROLLUP;
+	</select>
+	
+	
+	
+	
+</mapper>
+   
+   
+   
+   
+   
+   

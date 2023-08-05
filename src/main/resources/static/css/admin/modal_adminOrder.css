@@ -1,0 +1,175 @@
+@charset "utf-8";
+
+/* 주문 접수 */
+.order_accept_modal {
+	z-index: 201;
+}
+
+.order_accept_modal section {
+	width: 95%;
+	padding-top: 20px;
+	margin: 0 auto;
+}
+
+
+.order_accept_modal section div {
+	font-size: 18px;
+}
+
+.order_accept_modal article {
+	border-bottom: 1px solid #999999;
+	padding-bottom: 20px;
+	margin-bottom: 20px;
+	min-height: 100px;
+}
+
+.order_accept_modal article.delevery_info  {
+	position: relative;
+}
+
+.order_accept_modal .delevery_info .order_cancle_btn {
+	background: #808080;
+	color: #fff;
+	padding: 10px;
+	border: none;
+	border-radius: 10px;
+	position: absolute;
+	right: 0;
+}
+
+.order_accept_modal .delevery_info .info_area {
+	width: 82%;
+	display: flex;
+}
+
+.order_accept_modal .delevery_info .info_area > div:first-child {
+	display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-right: 3%;
+    color: #808080;
+}
+
+
+.order_accept_modal article.request div {
+	min-height: 50px;
+	border: 1px solid #333333;
+	margin-top: 5px;
+	padding: 5px;
+	border-radius: 10px;
+	word-break: break-word;
+}
+
+
+.order_accept_modal .menu {
+	font-size: 18px;
+}
+
+.order_accept_modal button.delevery_timer_btn {
+	background: #30DAD9;
+}
+/* 주문 접수 */
+
+
+
+/* 주문 거부 모달 */
+
+/* ------------------ 주문 거부 모달--------------------- */
+.order_cancle_modal {
+	z-index: 202 !important;
+}
+
+.order_cancle_modal .modal_box {
+	background: #F0F0F0;
+	/* height: 100%; */
+}
+
+.order_cancle_modal h2 {
+	text-align: center;
+	padding: 5% 0;
+}
+
+.order_cancle_modal li {
+	background: #fff;
+}
+
+.order_cancle_modal li {
+	border: 1px solid #DBDBDB;
+	width: 80%;
+	height: 50px;
+	text-align: center;
+	line-height: 50px;
+	margin: 0 auto;
+}
+
+.order_cancle_modal button.order_cancle {
+	background: #30DAD9;
+}
+
+/* ------------------ 주문 거부 모달--------------------- */
+
+
+/* 주문 거부 모달 */
+
+
+/* 배달 시간 설정 */
+
+.delevery_timer_modal {
+	/* z-index: 1000;
+	width: 600px;
+	margin-left: -300px; */
+	z-index: 203;
+}
+
+.delevery_timer_modal h2 {
+	font-size: 24px;
+	text-align: center;
+	height: 80px;
+	line-height: 80px;
+}
+
+.delevery_timer_modal section ul {
+	display: grid;
+	grid-template-columns: 25% 25% 25%; 
+    grid-template-rows: 100px 100px;
+    justify-content: center;
+    padding-top: 20px;
+    gap: 20px;
+}
+
+.delevery_timer_modal section ul li {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 10px;
+	background: #ddd;
+	cursor: pointer;
+}
+
+.delevery_timer_modal button.accept {
+	background: #30DAD9;
+}
+
+
+.select {
+	background: #30DAD9 !important;
+	color: #fff;
+	
+}
+
+
+@media ( max-width :600px) {
+	.delevery_timer li {
+		margin: 10px;
+		height: 60px;
+	}
+}
+
+/* 배달 시간 설정 */
+
+
+
+
+
+
+

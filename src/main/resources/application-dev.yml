@@ -1,0 +1,35 @@
+server:
+  port: 8088
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+  datasource: 
+    password: 111111
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    url: jdbc:mysql://@localhost:3307/baemin?serverTimezone=Asia/Seoul
+mybatis:
+  type-aliases-package: com.baemin.dto
+  mapper-locations: classpath:mybatis/*.xml
+
+#logging:
+ # level:
+  #  root: info
+
+# ?? ??(?? ??) ?? ?? ?? ??
+#  logging.level.root=info
+# ????? ?? ?? ?? ?
+# logging.level.gd.fintech.webapp=info
+# logging.level.gd.fintech.webapp.controller=debug
+# logging.level.gd.fintech.webapp.mapper=trace
+
+resource:
+  path: classpath:static/
+upload:
+  path: /path/to/upload/directory/
